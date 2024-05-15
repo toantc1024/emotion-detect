@@ -47,8 +47,6 @@ def predict(img):
                 return (out, (x, y, w, h))
     return (None, None)
 
-# load image
-img = cv.imread('K.jpg')
 
 
 
