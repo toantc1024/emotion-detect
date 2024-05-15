@@ -4,6 +4,8 @@ import cv2
 import numpy as np
 
 app =FastAPI() 
+
+
 # initialize FastAPI
 @app.post("/predict/emotion")
 async def image_upload(
