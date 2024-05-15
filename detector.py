@@ -1,3 +1,6 @@
+import numpy as np
+from keras.preprocessing.image import img_to_array
+import cv2 
 import keras 
 import tensorflow as tf
 import os
@@ -15,8 +18,8 @@ def ProcessImage(image):
     return image
  
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1' 
-MODEL_PATH = 'fer_model.h5'
-loaded_model = keras.models.load_model(MODEL_PATH)
+MODEL_PATH = 'FER_model.h5'
+model = keras.models.load_model(MODEL_PATH)
 import cv2 as cv
 
 def rect_to_bb(rect):
@@ -38,16 +41,18 @@ def predict(img):
             (x , y , w , h) = rect_to_bb(rect)
             img = gray[y-10 : y+h+10 , x-10 : x+w+10]
             if not (img.shape[0] == 0 or img.shape[1] == 0):
-                img = cv.resize(img , (48,48))
+                roi_gray = gray[y:y+h,x:x+w]
+                roi_gray = cv2.resize(roi_gray,(48,48),interpolation=cv2.INTER_AREA)  ##Face Cropping for prediction
+                roi = roi_gray.astype('float')/255.0
+                roi = img_to_array(roi)
+                roi = np.expand_dims(roi,axis=0) ## reshaping the cropped face image for prediction
+                r = model.predict(roi)[0]   #Prediction
                 # labels = ['Positive','Negative',  'Neutral']
-                r = loaded_model.predict(img.reshape(1,48,48,1))
-                labels = ['Angry', 'Disgust', 'Fear', 'Happy', 'Neutral', 'Surprise', 'Neutral']
-                index = int(r.argmax())
-                out = labels[index]
-                return (out, (x, y, w, h))
+                labels = ['Angry','Disgust','Fear','Happy','Neutral', 'Sad', 'Surprise']
+                prediction = model.predict(roi)[0]   #Prediction
+                label=labels[prediction.argmax()]
+                return (label, (x, y, w, h))
     return (None, None)
 
 
-
-
-
+        
